@@ -1,0 +1,16 @@
+tensorflow==1.14.0
+argparse
+dill
+fire
+matplotlib
+numba
+psutil
+pycocotools
+requests
+scikit-image
+scipy
+slidingwindow
+tqdm
+numpy
+opencv-python
+git+https://github.com/ppwwyyxx/tensorpack.git
