@@ -1,6 +1,5 @@
 tensorflow==2.21.0
 tf-slim
-argparse
 dill
 fire
 matplotlib

@@ -15,6 +15,7 @@ from pose_dataset import get_dataflow_batch, DataFlowToQueue, CocoPose
 from pose_augment import set_network_input_wh, set_network_scale
 from common import get_sample_images
 from networks import get_network
+from tf_pose import quantize
 
 logger = logging.getLogger('train')
 logger.handlers.clear()
@@ -132,8 +133,8 @@ if __name__ == '__main__':
 
     if args.quant_delay >= 0:
         logger.info('train using quantized mode, delay=%d' % args.quant_delay)
-        # tf.contrib.quantize was removed in TensorFlow 2.x.
-        raise NotImplementedError('quantization-aware training (--quant-delay) is not supported on TensorFlow 2.x')
+        g = tf.get_default_graph()
+        quantize.create_training_graph(input_graph=g, quant_delay=args.quant_delay)
 
     # optimizer = tf.train.RMSPropOptimizer(learning_rate, decay=0.0005, momentum=0.9, epsilon=1e-10)
     optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)
