@@ -22,10 +22,10 @@ import contextlib
 import copy
 import os
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 
-slim = tf.contrib.slim
+from tf_pose.slim_compat import slim
 
 
 @slim.add_arg_scope
@@ -397,7 +397,7 @@ def training_scope(is_training=True,
                    bn_decay=0.997):
   """Defines Mobilenet training scope.
   Usage:
-     with tf.contrib.slim.arg_scope(mobilenet.training_scope()):
+     with slim.arg_scope(mobilenet.training_scope()):
        logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
      # the network created will be trainble with dropout/batch norm
      # initialized appropriately.
@@ -427,12 +427,14 @@ def training_scope(is_training=True,
     weight_intitializer = tf.truncated_normal_initializer(stddev=stddev)
 
   # Set weight_decay for weights in Conv and FC layers.
+  # updates_collections=None selects the fused batch norm, which does not depend on legacy Keras layers.
   with slim.arg_scope(
       [slim.conv2d, slim.fully_connected, slim.separable_conv2d],
       weights_initializer=weight_intitializer,
       normalizer_fn=slim.batch_norm), \
       slim.arg_scope([mobilenet_base, mobilenet], is_training=is_training),\
       safe_arg_scope([slim.batch_norm], **batch_norm_params), \
+      slim.arg_scope([slim.batch_norm], updates_collections=None), \
       safe_arg_scope([slim.dropout], is_training=is_training,
                      keep_prob=dropout_keep_prob), \
       slim.arg_scope([slim.conv2d], \

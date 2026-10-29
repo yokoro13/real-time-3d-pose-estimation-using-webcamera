@@ -4,20 +4,25 @@ import sys
 
 import abc
 import numpy as np
-import tensorflow as tf
-import tensorflow.contrib.slim as slim
+import tensorflow.compat.v1 as tf
+from tf_pose.slim_compat import slim
 
 from tf_pose.common import to_str
 from tf_pose import common
 
+tf.disable_v2_behavior()
+
+# NOTE: slim.batch_norm is used with updates_collections=None so that it takes the fused implementation,
+# which does not depend on the legacy Keras BatchNormalization layer that is unavailable in TensorFlow 2.x.
+
 DEFAULT_PADDING = 'SAME'
 
 
-_init_xavier = tf.contrib.layers.xavier_initializer()
+_init_xavier = tf.glorot_uniform_initializer()
 _init_norm = tf.truncated_normal_initializer(stddev=0.01)
-_init_zero = slim.init_ops.zeros_initializer()
-_l2_regularizer_00004 = tf.contrib.layers.l2_regularizer(0.00004)
-_l2_regularizer_convb = tf.contrib.layers.l2_regularizer(common.regularizer_conv)
+_init_zero = tf.zeros_initializer()
+_l2_regularizer_00004 = slim.l2_regularizer(0.00004)
+_l2_regularizer_convb = slim.l2_regularizer(common.regularizer_conv)
 
 
 def layer(op):
@@ -142,7 +147,7 @@ class BaseNetwork(object):
 
     def make_var(self, name, shape, trainable=True):
         '''Creates a new TensorFlow variable.'''
-        return tf.get_variable(name, shape, trainable=self.trainable & trainable, initializer=tf.contrib.layers.xavier_initializer())
+        return tf.get_variable(name, shape, trainable=self.trainable & trainable, initializer=tf.glorot_uniform_initializer())
 
     def validate_padding(self, padding):
         '''Verifies that the padding is one of the supported ones.'''
@@ -178,12 +183,12 @@ class BaseNetwork(object):
 
     @layer
     def separable_conv(self, input, k_h, k_w, c_o, stride, name, relu=True, set_bias=True):
-        with slim.arg_scope([slim.batch_norm], decay=0.999, fused=common.batchnorm_fused, is_training=self.trainable):
+        with slim.arg_scope([slim.batch_norm], decay=0.999, fused=common.batchnorm_fused, is_training=self.trainable, updates_collections=None):
             output = slim.separable_convolution2d(input,
                                                   num_outputs=None,
                                                   stride=stride,
                                                   trainable=self.trainable,
-                                                  depth_multiplier=1.0,
+                                                  depth_multiplier=1,
                                                   kernel_size=[k_h, k_w],
                                                   # activation_fn=common.activation_fn if relu else None,
                                                   activation_fn=None,
@@ -212,7 +217,7 @@ class BaseNetwork(object):
 
     @layer
     def convb(self, input, k_h, k_w, c_o, stride, name, relu=True, set_bias=True, set_tanh=False):
-        with slim.arg_scope([slim.batch_norm], decay=0.999, fused=common.batchnorm_fused, is_training=self.trainable):
+        with slim.arg_scope([slim.batch_norm], decay=0.999, fused=common.batchnorm_fused, is_training=self.trainable, updates_collections=None):
             output = slim.convolution2d(input, c_o, kernel_size=[k_h, k_w],
                                         stride=stride,
                                         normalizer_fn=slim.batch_norm,
@@ -251,7 +256,7 @@ class BaseNetwork(object):
         # Convolution for a given input and kernel
         convolve = lambda i, k: tf.nn.conv2d(i, k, [1, s_h, s_w, 1], padding=padding)
         with tf.variable_scope(name) as scope:
-            kernel = self.make_var('weights', shape=[k_h, k_w, c_i / group, c_o], trainable=self.trainable & trainable)
+            kernel = self.make_var('weights', shape=[k_h, k_w, c_i // group, c_o], trainable=self.trainable & trainable)
             if group == 1:
                 # This is the common-case. Convolve the input without any further complications.
                 output = convolve(input, kernel)
@@ -331,13 +336,13 @@ class BaseNetwork(object):
 
     @layer
     def softmax(self, input, name):
-        input_shape = map(lambda v: v.value, input.get_shape())
+        input_shape = input.get_shape().as_list()
         if len(input_shape) > 2:
             # For certain models (like NiN), the singleton spatial dimensions
             # need to be explicitly squeezed, since they're not broadcast-able
             # in TensorFlow's NHWC ordering (unlike Caffe's NCHW).
             if input_shape[1] == 1 and input_shape[2] == 1:
-                input = tf.squeeze(input, squeeze_dims=[1, 2])
+                input = tf.squeeze(input, axis=[1, 2])
             else:
                 raise ValueError('Rank 2 tensor input expected for softmax!')
         return tf.nn.softmax(input, name=name)
@@ -378,7 +383,7 @@ class BaseNetwork(object):
         ref : https://github.com/kobiso/SENet-tensorflow-slim/blob/master/nets/attention_module.py
         """
 
-        kernel_initializer = tf.contrib.layers.variance_scaling_initializer()
+        kernel_initializer = slim.variance_scaling_initializer()
         bias_initializer = tf.constant_initializer(value=0.0)
 
         with tf.variable_scope(name):

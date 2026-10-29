@@ -1,6 +1,6 @@
 from enum import Enum
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import cv2
 
 

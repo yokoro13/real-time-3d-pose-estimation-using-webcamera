@@ -8,7 +8,7 @@ import time
 
 import cv2
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from tqdm import tqdm
 
 from pose_dataset import get_dataflow_batch, DataFlowToQueue, CocoPose
@@ -132,8 +132,8 @@ if __name__ == '__main__':
 
     if args.quant_delay >= 0:
         logger.info('train using quantized mode, delay=%d' % args.quant_delay)
-        g = tf.get_default_graph()
-        tf.contrib.quantize.create_training_graph(input_graph=g, quant_delay=args.quant_delay)
+        # tf.contrib.quantize was removed in TensorFlow 2.x.
+        raise NotImplementedError('quantization-aware training (--quant-delay) is not supported on TensorFlow 2.x')
 
     # optimizer = tf.train.RMSPropOptimizer(learning_rate, decay=0.0005, momentum=0.9, epsilon=1e-10)
     optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=1e-8)

@@ -5,13 +5,14 @@ import slidingwindow as sw
 
 import cv2
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import time
 
 from tf_pose import common
 from tf_pose.common import CocoPart
 from tf_pose.tensblur.smoother import Smoother
-import tensorflow.contrib.tensorrt as trt
+
+tf.disable_v2_behavior()
 
 try:
     from tf_pose.pafprocess import pafprocess
@@ -313,6 +314,7 @@ class TfPoseEstimator:
             graph_def.ParseFromString(f.read())
 
         if trt_bool is True:
+            from tensorflow.python.compiler.tensorrt import trt_convert as trt
             output_nodes = ["Openpose/concat_stage7"]
             graph_def = trt.create_inference_graph(
                 graph_def,
@@ -324,7 +326,6 @@ class TfPoseEstimator:
                 minimum_segment_size=3,
                 is_dynamic_op=True,
                 maximum_cached_engines=int(1e3),
-                use_calibration=True,
             )
 
         self.graph = tf.get_default_graph()

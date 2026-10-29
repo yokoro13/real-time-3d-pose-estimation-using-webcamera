@@ -1,7 +1,7 @@
 import os
 from os.path import dirname, abspath
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from tf_pose.network_mobilenet import MobilenetNetwork
 from tf_pose.network_mobilenet_thin import MobilenetNetworkThin

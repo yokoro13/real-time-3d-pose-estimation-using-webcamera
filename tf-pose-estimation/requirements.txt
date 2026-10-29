@@ -1,4 +1,5 @@
-tensorflow==1.14.0
+tensorflow==2.21.0
+tf-slim
 argparse
 dill
 fire

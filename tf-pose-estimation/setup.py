@@ -28,6 +28,8 @@ REQUIRED_PACKAGES = [
     'slidingwindow >= 0.0.13',
     'tqdm >= 4.23.4',
     'tensorpack >= 0.8.5',
+    'tensorflow >= 2.21.0',
+    'tf-slim',
     'pycocotools'
 ]
 

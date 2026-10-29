@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from tf_pose import network_base
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 
 class CmuNetwork(network_base.BaseNetwork):
