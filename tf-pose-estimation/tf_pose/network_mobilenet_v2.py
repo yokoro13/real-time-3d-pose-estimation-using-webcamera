@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+from tf_pose.slim_compat import slim
 
 from tf_pose import network_base
 from tf_pose.mobilenet import mobilenet_v2
@@ -15,7 +16,7 @@ class Mobilenetv2Network(network_base.BaseNetwork):
 
     @layer
     def base(self, input, name):
-        with tf.contrib.slim.arg_scope(mobilenet_v2.training_scope()):
+        with slim.arg_scope(mobilenet_v2.training_scope()):
             net, endpoints = mobilenet_v2.mobilenet_base(input, self.conv_width, finegrain_classification_mode=(self.conv_width < 1.0))
             for k, tensor in sorted(list(endpoints.items()), key=lambda x: x[0]):
                 self.layers['%s/%s' % (name, k)] = tensor

@@ -25,12 +25,12 @@ from __future__ import print_function
 import copy
 import functools
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from tf_pose.mobilenet import conv_blocks as ops
 from tf_pose.mobilenet import mobilenet as lib
 
-slim = tf.contrib.slim
+from tf_pose.slim_compat import slim
 op = lib.op
 
 expand_input = ops.expand_input_by_factor
@@ -94,7 +94,7 @@ def mobilenet(input_tensor,
   """Creates mobilenet V2 network.
   Inference mode is created by default. To create training use training_scope
   below.
-  with tf.contrib.slim.arg_scope(mobilenet_v2.training_scope()):
+  with slim.arg_scope(mobilenet_v2.training_scope()):
      logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
   Args:
     input_tensor: The input tensor
@@ -187,7 +187,7 @@ def mobilenet_base(input_tensor, depth_multiplier=1.0, **kwargs):
 def training_scope(**kwargs):
   """Defines MobilenetV2 training scope.
   Usage:
-     with tf.contrib.slim.arg_scope(mobilenet_v2.training_scope()):
+     with slim.arg_scope(mobilenet_v2.training_scope()):
        logits, endpoints = mobilenet_v2.mobilenet(input_tensor)
   with slim.
   Args:

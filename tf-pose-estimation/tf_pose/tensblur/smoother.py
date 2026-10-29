@@ -5,7 +5,7 @@ import numpy as np
 import scipy.stats as st
 import pdb
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 
 def layer(op):

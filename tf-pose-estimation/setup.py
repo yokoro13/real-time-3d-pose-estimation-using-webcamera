@@ -5,7 +5,7 @@ from __future__ import print_function
 import os
 import subprocess
 import setuptools
-from distutils.core import setup, Extension
+from setuptools import Extension
 
 import numpy as np
 
@@ -17,8 +17,7 @@ subprocess.check_output(["bash", "models/graph/cmu/download.sh"], cwd=cwd)
 POSE_DIR = os.path.realpath(os.path.dirname(__file__))
 
 REQUIRED_PACKAGES = [
-    'argparse>=1.1',
-    'dill==0.2.7.1',
+    'dill',
     'fire >= 0.1.3',
     'matplotlib >= 2.2.2',
     'psutil >= 5.4.5',
@@ -28,6 +27,8 @@ REQUIRED_PACKAGES = [
     'slidingwindow >= 0.0.13',
     'tqdm >= 4.23.4',
     'tensorpack >= 0.8.5',
+    'tensorflow >= 2.21.0',
+    'tf-slim',
     'pycocotools'
 ]
 
@@ -48,6 +49,7 @@ setuptools.setup(
     version=_VERSION,
     description=
     'Deep Pose Estimation implemented using Tensorflow with Custom Architectures for fast inference.',
+    python_requires='>=3.10',
     install_requires=REQUIRED_PACKAGES,
     dependency_links=DEPENDENCY_LINKS,
     url='https://github.com/ildoonet/tf-pose-estimation/',

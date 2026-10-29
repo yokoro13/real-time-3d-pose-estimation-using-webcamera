@@ -19,7 +19,7 @@ import cv2
 import numpy as np
 import time
 
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 
 from tensorpack.dataflow import MultiThreadMapData
 from tensorpack.dataflow.image import MapDataComponent
